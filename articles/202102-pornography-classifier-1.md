@@ -3,7 +3,7 @@ title: "けしからん画像分類器を作ってみる (1) 序章"
 emoji: "👙"
 type: "idea" # tech: 技術記事 / idea: アイデア
 topics: ["machinelearning", "deeplearning", "computervision", "python"]
-published: false
+published: true
 ---
 
 # この記事について
