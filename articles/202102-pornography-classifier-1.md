@@ -46,7 +46,7 @@ published: true
 
 目指す実行イメージを以下に示します。入出力を先に決めておくと、何でも取り組みやすいですね。
 
-```text
+```
 docker$ python3 keshikaran.py dog.jpg
 0.02
 
