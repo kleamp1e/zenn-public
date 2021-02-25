@@ -15,7 +15,8 @@ published: true
 # 目次
 
 * けしからん画像分類器を作ってみる (1) 序章（本記事）
-* [けしからん画像分類器を作ってみる (2) データ収集](https://zenn.dev/kleamp1e/articles/202102-pornography-classifier-2)
+* [けしからん画像分類器を作ってみる (2) データ収集](202102-pornography-classifier-2)
+* [けしからん画像分類器を作ってみる (3) データ収集 その2](202102-pornography-classifier-3)
 
 # まずはテーマを決める
 
