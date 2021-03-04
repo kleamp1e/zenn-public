@@ -18,6 +18,6 @@
   },
   "homepage": "https://github.com/kleamp1e/zenn-public#readme",
   "dependencies": {
-    "zenn-cli": "^0.1.73"
+    "zenn-cli": "^0.1.75"
   }
 }
