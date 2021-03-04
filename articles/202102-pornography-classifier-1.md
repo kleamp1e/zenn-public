@@ -6,18 +6,19 @@ topics: ["machinelearning", "deeplearning", "computervision", "python"]
 published: true
 ---
 
+# 目次
+
+* けしからん画像分類器を作ってみる (1) 序章（本記事）
+* [けしからん画像分類器を作ってみる (2) データ収集 その1](202102-pornography-classifier-2)
+* [けしからん画像分類器を作ってみる (3) データ収集 その2](202102-pornography-classifier-3)
+* [けしからん画像分類器を作ってみる (4) データ収集 その3](202103-pornography-classifier-4)
+* [けしからん画像分類器を作ってみる (5) データ管理 その1](202103-pornography-classifier-5)
+
 # この記事について
 
 はじめまして。kleamp1eです。この度、画像処理と機械学習を学び始めました。
 「アウトプットしないのは知的な便秘」らしいので、学んだこと、悩んだことをZennにアウトプットしつつ学んで行こうと思います。
 色々と初心者ですので、間違いやより良い方法がある場合は、コメントで（できれば優しく）教えて頂けると嬉しいです。
-
-# 目次
-
-* けしからん画像分類器を作ってみる (1) 序章（本記事）
-* [けしからん画像分類器を作ってみる (2) データ収集](202102-pornography-classifier-2)
-* [けしからん画像分類器を作ってみる (3) データ収集 その2](202102-pornography-classifier-3)
-* [けしからん画像分類器を作ってみる (4) データ収集 その3](202103-pornography-classifier-4)
 
 # まずはテーマを決める
 
@@ -65,4 +66,4 @@ docker$ python3 keshikaran.py sexy.jpg
 
 今日はここまで！
 
-「[けしからん画像分類器を作ってみる (2) データ収集](https://zenn.dev/kleamp1e/articles/202102-pornography-classifier-2)」に続く。
+「[けしからん画像分類器を作ってみる (2) データ収集 その1](https://zenn.dev/kleamp1e/articles/202102-pornography-classifier-2)」に続く。
