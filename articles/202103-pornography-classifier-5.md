@@ -45,7 +45,7 @@ SHA-2（224〜512ビット）でも良かったのですが、160ビットもあ
 
 macOSでは`shasum`コマンドを使うことで簡単にハッシュ値を確認できます。（実際のプログラムでは[OpenSSL::Digest::SHA1](https://docs.ruby-lang.org/ja/latest/class/OpenSSL=3a=3aDigest=3a=3aSHA1.html)を使用しました）
 
-```text
+```
 mac$ echo -n "https://www.google.com/" | shasum
 595c3cce2409a55c13076f1bac5edee529fc2e58  -
 ```
