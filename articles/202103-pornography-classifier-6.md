@@ -3,7 +3,7 @@ title: "けしからん画像分類器を作ってみる (6) データ管理 そ
 emoji: "👙"
 type: "idea" # tech: 技術記事 / idea: アイデア
 topics: ["machinelearning", "deeplearning", "computervision", "python"]
-published: false
+published: true
 ---
 
 # 目次
