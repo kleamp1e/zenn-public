@@ -37,7 +37,12 @@ published: false
 * ソフトウェア:
     * OS: Ubuntu 20.04.2 LTS
     * Docker: 19.03.8
-    * TensorFlow: 2.4.1
+    * NVIDIAドライバ: 460.39
+    * Dockerコンテナ内:
+        * CUDA: 11.0.3
+        * cuDNN: 8
+        * Python: 3.8.5
+        * TensorFlow: 2.4.1
 
 # フレームワーク
 
@@ -50,12 +55,26 @@ EfficientNetの学習済みモデルが提供されていたのが主な理由�
 EfficientNetは2019年5月にGoogleの研究者が発表したモデルで、比較的少ないパラメータ数でよい精度を得られるらしいです。
 また、EfficientNetにはB0からB7までのバリエーションがありますが、一番コンパクトならB0を使います。
 
-具体的には、[TensorFlow Hub](https://tfhub.dev/google/collections/efficientnet)で提供されているEfficientNet B0の学習済みモデルを使用しました。この学習済みモデルはImageNetで事前学習されています。
+具体的には、[TensorFlow Hub](https://tfhub.dev/google/collections/efficientnet)で提供されているEfficientNet B0の学習済みモデル（Pretrained Model）を使用しました。この学習済みモデルはImageNetで事前学習されています。
 
 今回はファインチューニング（Fine Tuning）は行わず、転移学習（Transfer Learning）のみを行いました。ファインチューニングには別の機会にトライしてみたいです。
 
+参考:
+
+* [2019年最強の画像認識モデルEfficientNet解説 - Qiita](https://qiita.com/omiita/items/83643f78baabfa210ab1)
+* [EfficientNet Explained | Papers With Code](https://paperswithcode.com/method/efficientnet)
+* [EfficientNetを最速で試す方法 - Qiita](https://qiita.com/wakame1367/items/d90fa56bd9d11c4db50e)
+
 # データの概要
 
+今回はラベル付きのデータ22,640枚を使用しました。内訳は以下の通りです。
+
+| 内容 | 枚数 | ラベル |
+|:---|---:|:---:|
+| けしからんくない画像 | 7,617枚 | `0` |
+| けしからん画像 | 15,023枚 | `1` |
+
+世の中には「けしからん画像」ばかりなので、いわゆる「不均衡データ」（Imbalanced Data）になっています。ちなみに今回は不均衡さは考慮していません。
 
 # データの前処理
 
@@ -64,7 +83,3 @@ EfficientNetは2019年5月にGoogleの研究者が発表したモデルで、比
 
 
 # 参考
-
-* [EfficientNet Explained | Papers With Code](https://paperswithcode.com/method/efficientnet)
-* [2019年最強の画像認識モデルEfficientNet解説 - Qiita](https://qiita.com/omiita/items/83643f78baabfa210ab1)
-* [EfficientNetを最速で試す方法 - Qiita](https://qiita.com/wakame1367/items/d90fa56bd9d11c4db50e)
