@@ -14,6 +14,7 @@ published: true
 * [けしからん画像分類器を作ってみる (4) データ収集 その3](202103-pornography-classifier-4)
 * [けしからん画像分類器を作ってみる (5) データ管理 その1](202103-pornography-classifier-5)
 * [けしからん画像分類器を作ってみる (6) データ管理 その2](202103-pornography-classifier-6)
+* [けしからん画像分類器を作ってみる (7) 学習 その1](202104-pornography-classifier-7)
 
 # この記事について
 
