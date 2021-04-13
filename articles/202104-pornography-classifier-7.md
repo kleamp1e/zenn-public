@@ -1,5 +1,5 @@
 ---
-title: "けしからん画像分類器を作ってみる (6) 学習 その1"
+title: "けしからん画像分類器を作ってみる (7) 学習 その1"
 emoji: "👙"
 type: "idea" # tech: 技術記事 / idea: アイデア
 topics: ["machinelearning", "deeplearning", "computervision", "python", "keras"]
@@ -14,17 +14,12 @@ published: false
 * [けしからん画像分類器を作ってみる (4) データ収集 その3](202103-pornography-classifier-4)
 * [けしからん画像分類器を作ってみる (5) データ管理 その1](202103-pornography-classifier-5)
 * [けしからん画像分類器を作ってみる (6) データ管理 その2](202103-pornography-classifier-6)
-* けしからん画像分類器を作ってみる (6) 学習 その1（本記事）
+* けしからん画像分類器を作ってみる (7) 学習 その1（本記事）
 
 # 今回の内容
 
 [前回](202103-pornography-classifier-6)の記事から随分と間が開いてしまいました。
 今回は「ラベル付け」について書くつもりでしたが、そろそろ前置きが長くなって飽きてきた読者がいそうなので、今回は「学習」について書きたいと思います。
-
-# 結論
-
-最初に結論を書いておくと、精度（Accuracy）が84%程度のモデルを得ることができました。
-今回はほとんど工夫はしておらず、かなりシンプルな構成です。様々な手法を適用することで、さらに数%は精度を高められそうな気がしています。
 
 # 環境
 
@@ -61,8 +56,8 @@ EfficientNetは2019年5月にGoogleの研究者が発表したモデルで、比
 
 **参考:**
 
-* [2019年最強の画像認識モデルEfficientNet解説 - Qiita](https://qiita.com/omiita/items/83643f78baabfa210ab1)
 * [EfficientNet Explained | Papers With Code](https://paperswithcode.com/method/efficientnet)
+* [2019年最強の画像認識モデルEfficientNet解説 - Qiita](https://qiita.com/omiita/items/83643f78baabfa210ab1)
 * [EfficientNetを最速で試す方法 - Qiita](https://qiita.com/wakame1367/items/d90fa56bd9d11c4db50e)
 
 # データの概要
@@ -76,9 +71,9 @@ EfficientNetは2019年5月にGoogleの研究者が発表したモデルで、比
 
 世の中には「けしからん画像」ばかりなので、いわゆる「不均衡データ」（Imbalanced Data）になっています。ちなみに今回は不均衡さは考慮していません。今後の課題ということで。
 
-データの具体例を以下に示します。先頭行はヘッダ行で、以降の行はオブジェクトID（過去の記事を参照）とラベルで構成されています。
+ラベルデータの具体例を以下に示します。先頭行はヘッダ行で、以降の行はオブジェクトID（過去の記事を参照）とラベル（今回は`0`または`1`）で構成されています。
 
-```text
+```
 $ wc -l /mnt/data/label.csv
 22641 /mnt/data/label.csv
 
@@ -95,7 +90,7 @@ objectId,value
 上記のデータを学習データ（Training Data、訓練データとも）80%、検証データ（Validation Data）10%、テストデータ（Test Data）10%に分割して使用しました。
 可能な限り分割先を維持するために、オブジェクトID（SHA-1ハッシュ値）に基づいて分割を行いました。
 
-具体的には、SHA-1ハッシュ値は160ビット（20バイト）ありますが、その下位1バイト（256種類）を使ってデータを分割しました。
+具体的には、SHA-1ハッシュ値160ビット（20バイト）の下位1バイト（256種類）を使ってデータを分割しました。
 下位1バイトが0〜24をテストデータ、25〜49を検証用データ、残りを学習データとしました。
 また、テストデータ、検証データによる評価を容易にするために、それぞれラベルの少ない方に数を合わせ、余ったデータは学習データとしました。
 
@@ -150,7 +145,7 @@ df.to_csv("split_label.csv", index=False)
 
 実行結果は以下の通りです。
 
-```text
+```
 $ ./split.py
 df: 22640
 df.0: 7617
@@ -178,10 +173,7 @@ validation.1: 747
 
 * [ML Design Pattern #5: Repeatable sampling | by Lak Lakshmanan | Towards Data Science](https://towardsdatascience.com/ml-design-pattern-5-repeatable-sampling-c0ccb2889f39)
 
-# データの前処理
+# 今回はここまで
 
-
-# 学習
-
-
-# 参考
+今回も実際の学習には到達せず、力尽きてしまいました・・・。
+次回こそは実際の学習を回したいと思います。今日はここまで！
