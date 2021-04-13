@@ -96,7 +96,7 @@ objectId,value
 
 言葉で説明するよりコードを見て頂く方が確実ですね。データを分割するPythonスクリプトは以下の通りです。
 
-```py
+```py:split.py
 #!/usr/bin/env python3
 
 import re
