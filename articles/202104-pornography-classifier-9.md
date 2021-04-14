@@ -21,10 +21,10 @@ published: false
 # ついに`keshikaran.py`を手に入れた
 
 [前回](202104-pornography-classifier-8)、「EfficientNet B0」を使った画像分類モデルを約2万枚の画像で学習し、精度85%を得ることができました。
-「テストデータで精度85%！」と言われても、現実の「けしからん画像」を分類できないと意味が無いですね。
+「テストデータで精度85%！」と言われても、現実の「けしからん画像」を分類できないと意味が無いですよね。
 
 今回は、得られた画像分類モデルを使って推論（Inference、Predict）するスクリプトを書いてみます。
-そう、ついに[最初の記事](202102-pornography-classifier-1)で妄想した`keshikaran.py`を手に入れる時が来たのです。
+そう、ついに[最初の記事](202102-pornography-classifier-1)で妄想した`keshikaran.py`を手に入れる時が来たのです！
 
 # モデルの読み込みで少しハマった
 
@@ -64,7 +64,7 @@ Traceback (most recent call last):
 ValueError: Unknown layer: KerasLayer
 ```
 
-少し調べてみると、`hub.KerasLayer`を使っている場合は、カスタムレイヤーについての情報が必要とのこと。
+少し調べてみると、`hub.KerasLayer`を使っている場合は、読み込み時にカスタムレイヤーについての情報が必要とのこと。
 以下の様に`custom_objects`を指定することで、モデルを読み込むことができました。
 
 ```py
@@ -111,7 +111,7 @@ print(predictions[0][0])
 
 では実際の画像を入力して推論してみましょう。以下の画像は[ぱくたそ](https://www.pakutaso.com/)からお借りしました。
 
-まずはこちらの[犬の画像](https://www.pakutaso.com/20170355090post-10833.html)から推論してみます。
+まずはこちらの[犬の画像](https://www.pakutaso.com/20170355090post-10833.html)から推論してみます。ちょっと羊っぽくて可愛いですね。
 
 ![](https://storage.googleapis.com/zenn-user-upload/8f6nbepxl9as9f5wvurgam5ebsjo)
 
@@ -120,7 +120,7 @@ $ python3 keshikaran.py dog.jpg
 0.29267535
 ```
 
-思ったよりも高いですが、閾値（0.5）は下回っているので「けしからんくない画像」と見なして良さそうです。
+思ったよりも数値が高いですが、中間（0.5）は下回っているので「けしからんくない画像」と見なして良さそうです。
 
 続いて、こちらの[ちょっとセクシーな女性の画像](https://www.pakutaso.com/20200943246post-18368.html)を推論してみます。
 
@@ -133,7 +133,7 @@ $ python3 keshikaran.py woman.jpg
 
 犬の写真よりもだいぶ数値が上がりました。こちらは「けしからん画像」のようです。
 
-さらにより実践的（？）な画像を入力してみます。
+さらに、より実践的（？）な画像を入力してみます。
 `aHR0cHM6Ly9ibG9nLWltZ3MtMTQ1LmZjMi5jb20vcy91L20vc3Vtb21vY2hhbm5lbC92cl9ha2lyYWVsbHlfMTAyNTgtMDAyLmpwZw==`から入手した画像（リンクするのは憚られるので、URLをBase64エンコードしています）を入力してみます。
 
 ```
