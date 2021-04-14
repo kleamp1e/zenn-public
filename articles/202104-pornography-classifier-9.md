@@ -38,7 +38,7 @@ import tensorflow as tf
 model = tf.keras.models.load_model("model.h5")
 ```
 
-みたいなコードでモデルを読み込むと、`ValueError`が発生しました。
+みたいなコードでモデルを読み込むと、`ValueError: Unknown layer: KerasLayer`が発生しました。
 
 ```
 Traceback (most recent call last):
@@ -76,3 +76,33 @@ model = tf.keras.models.load_model("model.h5", custom_objects={"KerasLayer": hub
 **参考:**
 
 * [[TF2.0] KerasLayer cannot be loaded from .h5 · Issue #26835 · tensorflow/tensorflow](https://github.com/tensorflow/tensorflow/issues/26835)
+
+# `keshikaran.py`を実装する
+
+モデルの読み込みが成功したので、早速`keshikaran.py`を実装してみましょう。仕様は以下の通りとします。
+
+* 画像のファイル名をコマンドライン引数として渡す。
+* 標準出力に「けしからん度合い」（要するにエロい度合い）を0〜1の実数で出力する。
+
+実際のスクリプトは以下の通りです。短いですね。
+
+```py:keshikaran.py
+#!/usr/bin/env python3
+
+import numpy as np
+import PIL.Image
+import sys
+import tensorflow as tf
+import tensorflow_hub as hub
+
+image_path = sys.argv[1]
+
+image = PIL.Image.open(image_path).convert("RGB").resize((224, 224))
+image = np.array(image) / 255
+image = np.expand_dims(image, 0)
+
+model = tf.keras.models.load_model("model.h5", custom_objects={"KerasLayer": hub.KerasLayer})
+
+predictions = model.predict(image)
+print(predictions[0][0])
+```
