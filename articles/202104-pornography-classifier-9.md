@@ -106,3 +106,57 @@ model = tf.keras.models.load_model("model.h5", custom_objects={"KerasLayer": hub
 predictions = model.predict(image)
 print(predictions[0][0])
 ```
+
+# 推論してみる
+
+では実際の画像を入力して推論してみましょう。以下の画像は[ぱくたそ](https://www.pakutaso.com/)からお借りしました。
+
+まずはこちらの[犬の画像](https://www.pakutaso.com/20170355090post-10833.html)から推論してみます。
+
+![](https://storage.googleapis.com/zenn-user-upload/8f6nbepxl9as9f5wvurgam5ebsjo)
+
+```
+$ python3 keshikaran.py dog.jpg
+0.29267535
+```
+
+思ったよりも高いですが、閾値（0.5）は下回っているので「けしからんくない画像」と見なして良さそうです。
+
+続いて、こちらの[ちょっとセクシーな女性の画像](https://www.pakutaso.com/20200943246post-18368.html)を推論してみます。
+
+![](https://storage.googleapis.com/zenn-user-upload/1c7oyioay8ey5tyqypaj3cgrqd75)
+
+```
+$ python3 keshikaran.py woman.jpg
+0.824198
+```
+
+犬の写真よりもだいぶ数値が上がりました。こちらは「けしからん画像」のようです。
+
+さらにより実践的（？）な画像を入力してみます。
+`aHR0cHM6Ly9ibG9nLWltZ3MtMTQ1LmZjMi5jb20vcy91L20vc3Vtb21vY2hhbm5lbC92cl9ha2lyYWVsbHlfMTAyNTgtMDAyLmpwZw==`から入手した画像（リンクするのは憚られるので、URLをBase64エンコードしています）を入力してみます。
+
+```
+$ python3 keshikaran.py sexy.jpg
+0.9372734
+```
+
+キター！いやー、これはけしからん。
+
+最後にもう1枚、肌色が多めの[こちらの画像](https://www.pakutaso.com/20151207336post-6399.html)を入力してみます。
+
+![](https://storage.googleapis.com/zenn-user-upload/f62658v3db0sqkqbavjx1dtcbp27)
+
+```
+$ python3 keshikaran.py man_and_dog.jpg
+0.34251067
+```
+
+こちらは「けしからんくない画像」の様です。激しく同意。
+
+# 今回はここまで
+
+ついに妄想していた`keshikaran.py`を実装することができました。ここでは数枚の画像しか試していませんが、基本的には上手く動作しているようです。
+正直、何に使えるかは分からないので、面白いアイデアを思いついたら教えて欲しいです。前回も書きましたが、要望があれば学習済みモデルは公開します。
+
+途中、ラベル付けなどのネタを飛ばしてしまったので、追々、そちらも書いていければと思っています。今日はここまで！
