@@ -1,5 +1,5 @@
 ---
-title: "EfficientNet B0〜B7で分類器を転移学習してみる"
+title: "EfficientNet B0〜B7で画像分類器を転移学習してみる"
 emoji: "🎓"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["machinelearning", "deeplearning", "computervision", "python", "keras"]
@@ -45,12 +45,12 @@ published: false
 
 # フレームワーク
 
-機械学習種レームワークとしては「Keras」を使用しました。
+機械学習フレームワークとしては「Keras」を使用しました。
 Kerasでは、TensorFlow Hubから取得したEfficientNetの学習済みモデルを簡単に使うことができます。
 
 # 学習結果
 
-それぞれのモデルバリエーションについて1回ずつ、10エポックの学習を行い、結果は以下の通りでした。
+それぞれのモデルバリエーションについて1回ずつ、10エポックの転移学習を行い、結果は以下の通りでした。
 Bxの数字が大きくなるにつれてモデルサイズが大きくなりますが、それに応じてテストデータで評価した精度が高まり、学習時間が延びる結果となりました。
 
 最小のB0と最大のB7を比べると、精度は+5%、学習時間は31倍となりました。
@@ -73,7 +73,7 @@ Bxの数字が大きくなるにつれてモデルサイズが大きくなりま
 * オプティマイザ（Optimizer）: Adam
 * エポック数: 10
 
-ファイルサイズとパラメータ数の比較を以下に示します。
+モデルのファイルサイズとパラメータ数の比較を以下に示します。
 
 ![](https://storage.googleapis.com/zenn-user-upload/wvcv0s080an02jwfn19wktw6ebw5)
 
@@ -85,13 +85,112 @@ Bxの数字が大きくなるにつれてモデルサイズが大きくなりま
 
 ![](https://storage.googleapis.com/zenn-user-upload/pu51ingqie3oryoo6rta2il38mg0)
 
-TODO: 表を挿入する
+各モデルにおける精度、Loss値について、学習データ、検証データにおける変遷は以下の通りです。
 
-TODO: チャートを挿入する
+![](https://storage.googleapis.com/zenn-user-upload/7rs4ppl0n5rx18f97nkn25hbxm7s)
 
 # 学習処理
 
-TODO: コードを追加する
+学習に使用したPythonスクリプトは以下の通りです。B0〜B7について、コメントアウトしている箇所を調整しつつ実行しました。
 
 ```py
+#!/usr/bin/env python3
+
+import datetime
+
+import pandas as pd
+import tensorflow as tf
+import tensorflow_hub as hub
+
+BATCH_SIZE = 512 # B0
+# BATCH_SIZE = 256 # B1, B2
+# BATCH_SIZE = 128 # B3, B4
+# BATCH_SIZE = 64 # B5
+# BATCH_SIZE = 32 # B6, B7
+
+TARGET_SIZE = 224 # B0
+# TARGET_SIZE = 240 # B1
+# TARGET_SIZE = 260 # B2
+# TARGET_SIZE = 300 # B3
+# TARGET_SIZE = 380 # B4
+# TARGET_SIZE = 456 # B5
+# TARGET_SIZE = 528 # B6
+# TARGET_SIZE = 600 # B7
+
+EPOCHS = 10
+
+model = tf.keras.Sequential(
+    [
+        hub.KerasLayer(
+            "https://tfhub.dev/tensorflow/efficientnet/b0/feature-vector/1", # B0
+            # "https://tfhub.dev/tensorflow/efficientnet/b1/feature-vector/1", # B1
+            # "https://tfhub.dev/tensorflow/efficientnet/b2/feature-vector/1", # B2
+            # "https://tfhub.dev/tensorflow/efficientnet/b3/feature-vector/1", # B3
+            # "https://tfhub.dev/tensorflow/efficientnet/b4/feature-vector/1", # B4
+            # "https://tfhub.dev/tensorflow/efficientnet/b5/feature-vector/1", # B5
+            # "https://tfhub.dev/tensorflow/efficientnet/b6/feature-vector/1", # B6
+            # "https://tfhub.dev/tensorflow/efficientnet/b7/feature-vector/1", # B7
+            trainable=False,
+        ),
+        tf.keras.layers.Dense(1, activation="sigmoid"),
+    ]
+)
+model.build([None, TARGET_SIZE, TARGET_SIZE, 3])
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(),
+    loss="binary_crossentropy",
+    metrics=["accuracy"],
+)
+model.summary()
+
+train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=(1.0 / 255))
+train_generator = train_datagen.flow_from_directory(
+    "/tmp/cache/pornography/train",
+    target_size=(TARGET_SIZE, TARGET_SIZE),
+    batch_size=BATCH_SIZE,
+    class_mode="binary",
+)
+
+validation_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
+    rescale=(1.0 / 255)
+)
+validation_generator = validation_datagen.flow_from_directory(
+    "/tmp/cache/pornography/validation",
+    target_size=(TARGET_SIZE, TARGET_SIZE),
+    batch_size=BATCH_SIZE,
+    class_mode="binary",
+)
+
+test_datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=(1.0 / 255))
+test_generator = test_datagen.flow_from_directory(
+    "/tmp/cache/pornography/test",
+    target_size=(TARGET_SIZE, TARGET_SIZE),
+    batch_size=BATCH_SIZE,
+    class_mode="binary",
+)
+
+model.fit(
+    x=train_generator,
+    steps_per_epoch=train_generator.n // BATCH_SIZE,
+    epochs=EPOCHS,
+    workers=8,
+    validation_data=validation_generator,
+    validation_steps=validation_generator.n // BATCH_SIZE,
+    callbacks=[
+        tf.keras.callbacks.TensorBoard(
+            log_dir="log/" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S"),
+            histogram_freq=1,
+        )
+    ],
+)
+
+model.evaluate(x=test_generator, steps=(test_generator.n // BATCH_SIZE), workers=8)
+
+model.save("model.h5")
 ```
+
+# 最後に
+
+今回の結果を見る限り、B3、B4あたりが学習時間と精度のバランスが良いかなと思いました。
+
+ファインチューニングした場合の相違についても、いつか調べてみたいと思います。
