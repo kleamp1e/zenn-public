@@ -3,7 +3,7 @@ title: "EfficientNet B0〜B7で画像分類器を転移学習してみる"
 emoji: "🎓"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["machinelearning", "deeplearning", "computervision", "python", "keras"]
-published: false
+published: true
 ---
 
 # はじめに
