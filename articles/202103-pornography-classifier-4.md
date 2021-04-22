@@ -19,6 +19,7 @@ published: true
 * [けしからん画像分類器を作ってみる (9) 推論](202104-pornography-classifier-9)
 * 番外編:
     * [EfficientNet B0〜B7で画像分類器を転移学習してみる](202104-efficientnet)
+    * [EfficientNet B0のKerasモデルをONNXモデルに変換して推論する](202104-keras-onnx)
 
 # 続 データ収集について
 
