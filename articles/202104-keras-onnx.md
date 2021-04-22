@@ -70,7 +70,6 @@ ENV TZ Asia/Tokyo
 ```
 
 ```:requirements.txt
-numpy==1.19.5
 onnxruntime==1.7.0
 tensorflow-hub==0.11.0
 tensorflow==2.4.1
@@ -220,3 +219,35 @@ $ ./predict_onnx.py
 Kerasでの推論結果とは厳密には一致しませんが、小数点第5位まで一致しているので問題はなさそうです。
 
 # keras2onnxで変換する
+
+続いて、[keras2onnx](https://github.com/onnx/keras-onnx)を使って変換してみます。
+
+`tf2onnx`の変換についてはサクッと一発で成功しましたが、`keras2onnx`を使った変換にはなかなか難儀しました。
+注意点は以下の通りです。
+
+* `keras2onnx`はTensorFlow v2.4に対応しておらず、TensorFlow v2.2までしか対応していません。
+* TensorFlow v2.4で生成したモデルはTensorFlow v2.2では読み込むことができなかったため、学習もv2.2で行う必要がありました。
+* TensorFlow v2.2を使うためにはCUDA 11.0/cuDNN 8ではなくCUDA 10.1/cuDNN 7を使う必要がありました。
+
+## Dockerイメージをビルドする
+
+今回は以下の`Dockerfile`、`requirements.txt`を使用しました。
+
+```Dockerfile:Dockerfile
+```
+
+```:requirements.txt
+```
+
+## モデルを生成する
+
+この手順、ソースコードは`tf2onnx`の場合と同様です。
+
+## Kerasで推論する
+
+この手順もソースコードは`tf2onnx`の場合と同様です。
+
+実行例を以下に示します。
+
+```
+```
