@@ -13,21 +13,29 @@ published: false
 
 # ONNXとは？
 
-ONNX（Open Neural Network Exchange）は、Facebook、Microsoftが主導して、機械学習フレームワークの相互運用を実現するためのプロジェクトです。詳しくは、まぁ、ググってください。
+ONNX（Open Neural Network Exchange）は、Facebook、Microsoftが主導して、機械学習フレームワークの相互運用を実現するためのプロジェクトです。詳しくは、まぁ・・・ググってください。
 
-* 公式: [ONNX | Home](https://onnx.ai/)
+* 公式: [ONNX](https://onnx.ai/)
 * Wikipedia: [Open Neural Network Exchange](https://ja.wikipedia.org/wiki/Open_Neural_Network_Exchange)
 
-# モデルを変換する方法
+# なぜONNXモデルに変換するの？
 
-KerasのモデルをONNXのモデルに変換する方法は、大きく以下の2つがあります。
+個人的には「ONNXRuntimeによる推論が早いから」というのが一番の理由ですが、Keras、PyTorchなど異なる機械学習フレームワークを使って学習したモデルを、推論時に統一的に扱える嬉しさもあります。
 
-* tf2onnxで変換する ← オススメ！
-* keras2onnxで変換する
+# モデルを変換する2つの方法
 
-前者が圧倒的にオススメです。勉強のために後者も試してみましたが、なかなか大変でした。
+KerasモデルをONNXモデルに変換する方法は、ざっと調べる限り、以下の2つがあります。
 
-どちらの変換、推論も以下の環境で実行しました。Docker内で実行しており、今回はGPUは使用していません。
+* `tf2onnx`を使って変換する ← オススメ！
+* `keras2onnx`を使って変換する ← 成功せず
+
+前者が圧倒的にオススメです。勉強のために後者も試してみましたが、なかなか大変でした。何とか変換はできたのですが、推論で失敗してしまいました。
+
+なお、本記事では学習は行わず、変換、推論だけを行っていますが、学習後に変換する手順も同様です。
+
+# 環境
+
+どちらの変換、推論も以下の環境で実行しました。Docker内で実行しており、GPUは使用していません。
 
 * ハードウェア:
     * CPU: AMD Ryzen 7 3700X（8コア/16スレッド）
@@ -38,17 +46,15 @@ KerasのモデルをONNXのモデルに変換する方法は、大きく以下�
     * Docker: 19.03.8
     * NVIDIAドライバ: 460.39
 
-# tf2onnxで変換する
+# tf2onnxで変換する → 成功
 
-[tf2onnx](https://github.com/onnx/tensorflow-onnx)は、TensorFlowのモデルをONNXのモデルに変換するツールです。
-Kerasで学習した後、SavedModel形式でモデルを保存すると、このツールで変換することができます。
+[tf2onnx](https://github.com/onnx/tensorflow-onnx)は、TensorFlowモデルをONNXモデルに変換するツールです。
+Kerasでモデルを作成した後、TensorFlow SavedModel形式でモデルを保存すると、このツールで変換することができます。
 Keras H5形式には対応していないのでご注意ください。
-
-今回は学習は行わず、変換、推論だけを行っています。
 
 ## Dockerイメージをビルドする
 
-今回は以下の`Dockerfile`、`requirements.txt`を使用しました。
+使用した`Dockerfile`、`requirements.txt`は以下の通りです。
 
 ```Dockerfile:Dockerfile
 FROM nvidia/cuda:11.0.3-cudnn8-devel-ubuntu20.04
@@ -78,8 +84,8 @@ tf2onnx==1.8.4
 
 ## モデルを生成する
 
-今回はTensorFlow HubにあるEfficientNet B0をそのまま保存することでモデルファイルを生成します。
-推論結果を変換前後で確認することで、変換の成否を判断します。
+TensorFlow Hubにある学習済みの[EfficientNet B0](https://tfhub.dev/tensorflow/efficientnet/b0/feature-vector/1)をそのまま保存することでモデルファイルを生成します。
+本来は学習を行うのですが、今回は学習前の推論結果を変換前後で比較することで、変換の成否を判断します。
 
 ```py:save_model.py
 #!/usr/bin/env python3
@@ -118,11 +124,15 @@ Trainable params: 1,281
 Non-trainable params: 4,049,564
 _________________________________________________________________
 2021-04-23 00:07:12.365759: W tensorflow/python/util/util.cc:348] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
+
+$ ls efficientnet-b0
+assets  saved_model.pb  variables
 ```
 
 ## Kerasで推論する
 
-ONNXモデルに変換する前に、Kerasで推論できること、その結果を確認しておきましょう。
+ONNXモデルに変換する前に、Kerasでの推論結果を確認しておきましょう。
+ここでは黒一色、白一色の2枚の画像に対して推論を実行しています。
 
 ```py:predict_keras.py
 #!/usr/bin/env python3
@@ -132,16 +142,18 @@ import tensorflow as tf
 
 model = tf.keras.models.load_model("efficientnet-b0")
 
-images = np.array([
-  np.zeros((224, 224, 3), dtype=np.float32),
-  np.ones((224, 224, 3), dtype=np.float32),
-])
+images = np.array(
+    [
+        np.zeros((224, 224, 3), dtype=np.float32),
+        np.ones((224, 224, 3), dtype=np.float32),
+    ]
+)
 
 results = model.predict(images)
 print(results)
 ```
 
-実行例を以下に示します。全結合層が乱数で初期化されているため、モデルを保存する度に値は変わることにご注意ください。
+実行例を以下に示します。全結合層が乱数で初期化されているため、モデルを保存する度に値が変わることにご注意ください。
 
 ```
 $ ./predict_keras.py
@@ -199,10 +211,12 @@ import onnxruntime
 
 session = onnxruntime.InferenceSession("efficientnet-b0.onnx")
 
-images = np.array([
-  np.zeros((224, 224, 3), dtype=np.float32),
-  np.ones((224, 224, 3), dtype=np.float32),
-])
+images = np.array(
+    [
+        np.zeros((224, 224, 3), dtype=np.float32),
+        np.ones((224, 224, 3), dtype=np.float32),
+    ]
+)
 
 results = session.run(["dense"], {"keras_layer_input:0": images})
 print(results)
@@ -216,27 +230,49 @@ $ ./predict_onnx.py
        [0.5148051 ]], dtype=float32)]
 ```
 
-Kerasでの推論結果とは厳密には一致しませんが、小数点第5位まで一致しているので問題はなさそうです。
+Kerasモデルの推論結果と厳密には一致していませんが、小数点第5位まで一致しているので問題はなさそうです。
 
-# keras2onnxで変換する
+# keras2onnxで変換する → 失敗
 
 続いて、[keras2onnx](https://github.com/onnx/keras-onnx)を使って変換してみます。
 
 `tf2onnx`の変換についてはサクッと一発で成功しましたが、`keras2onnx`を使った変換にはなかなか難儀しました。
 注意点は以下の通りです。
 
-* `keras2onnx`はTensorFlow v2.4に対応しておらず、TensorFlow v2.2までしか対応していません。
+* `keras2onnx`はTensorFlow v2.4に対応しておらず、TensorFlow v2.2までしか対応していません。（2021年4月23日現在、v1.7.0）
 * TensorFlow v2.4で生成したモデルはTensorFlow v2.2では読み込むことができなかったため、学習もv2.2で行う必要がありました。
 * TensorFlow v2.2を使うためにはCUDA 11.0/cuDNN 8ではなくCUDA 10.1/cuDNN 7を使う必要がありました。
 
 ## Dockerイメージをビルドする
 
-今回は以下の`Dockerfile`、`requirements.txt`を使用しました。
+使用した`Dockerfile`、`requirements.txt`は以下の通りです。
+CUDA、TensorFlowのバージョンなどが`tf2onnx`の場合と異なります。
+
 
 ```Dockerfile:Dockerfile
+FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
+RUN apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    python3-dev \
+    python3-pip \
+    python3-setuptools \
+    tzdata \
+  && rm --recursive --force /var/lib/apt/lists/*
+RUN python3 -m pip install --upgrade pip setuptools
+WORKDIR /opt/app
+COPY requirements.txt ./
+RUN python3 -m pip install --requirement requirements.txt
+ENV LANG C.UTF-8
+ENV TZ Asia/Tokyo
 ```
 
 ```:requirements.txt
+keras2onnx==1.7.0
+onnxruntime==1.7.0
+tensorflow-hub==0.11.0
+tensorflow==2.2.1
 ```
 
 ## モデルを生成する
@@ -339,7 +375,7 @@ The ONNX operator number change on the optimization: 4007 -> 492
 実行例を以下に示します。
 
 ```
-root@a30864c4b2b2:/mnt/app# ./predict_onnx.py
+$ ./predict_onnx.py
 Traceback (most recent call last):
   File "./predict_onnx.py", line 6, in <module>
     session = onnxruntime.InferenceSession("efficientnet-b0.onnx")
