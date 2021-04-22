@@ -86,7 +86,7 @@ WORKDIR /opt/app
 COPY requirements.txt ./
 RUN python3 -m pip install --requirement requirements.txt
 ENV LANG C.UTF-8
-ENV TZ=Asia/Tokyo
+ENV TZ Asia/Tokyo
 ```
 
 また、`requirements.txt`は以下の通りです。関係する主要なパッケージのみ記載しています。
