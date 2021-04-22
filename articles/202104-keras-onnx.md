@@ -241,13 +241,119 @@ Kerasでの推論結果とは厳密には一致しませんが、小数点第5�
 
 ## モデルを生成する
 
-この手順、ソースコードは`tf2onnx`の場合と同様です。
+基本的な手順は`tf2onnx`の場合と同様ですが、なぜか`fit`か`predict`を呼び出さないとモデルの保存時にエラーが発生しました。
+
+```py:save_model.py
+#!/usr/bin/env python3
+
+import numpy as np
+import tensorflow as tf
+import tensorflow_hub as hub
+
+model = tf.keras.Sequential(
+    [
+        hub.KerasLayer(
+            "https://tfhub.dev/tensorflow/efficientnet/b0/feature-vector/1",
+            trainable=False,
+        ),
+        tf.keras.layers.Dense(1, activation="sigmoid"),
+    ]
+)
+model.build([None, 224, 224, 3])
+model.summary()
+model.predict(np.zeros((1, 224, 224, 3), dtype=np.float32))
+model.save("efficientnet-b0")
+```
+
+実行例は以下の通りです。
+
+```
+$ ./save_model.py
+Model: "sequential"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+keras_layer (KerasLayer)     multiple                  4049564
+_________________________________________________________________
+dense (Dense)                multiple                  1281
+=================================================================
+Total params: 4,050,845
+Trainable params: 1,281
+Non-trainable params: 4,049,564
+_________________________________________________________________
+2021-04-23 00:35:08.379870: W tensorflow/python/util/util.cc:329] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
+WARNING:tensorflow:From /usr/local/lib/python3.6/dist-packages/tensorflow/python/ops/resource_variable_ops.py:1817: calling BaseResourceVariable.__init__ (from tensorflow.python.ops.resource_variable_ops) with constraint is deprecated and will be removed in a future version.
+Instructions for updating:
+If using Keras pass *_constraint arguments to layers.
+WARNING:tensorflow:From /usr/local/lib/python3.6/dist-packages/tensorflow/python/ops/resource_variable_ops.py:1817: calling BaseResourceVariable.__init__ (from tensorflow.python.ops.resource_variable_ops) with constraint is deprecated and will be removed in a future version.
+Instructions for updating:
+If using Keras pass *_constraint arguments to layers.
+```
 
 ## Kerasで推論する
 
-この手順もソースコードは`tf2onnx`の場合と同様です。
+ソースコードは`tf2onnx`の場合と同様なので省略します。
 
 実行例を以下に示します。
 
 ```
+$ ./predict_keras.py
+WARNING:tensorflow:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+[[0.41439614]
+ [0.43379608]]
 ```
+
+## モデルを変換する
+
+`keras2onnx`を使ってモデルを変換します。
+
+```py:convert.py
+#!/usr/bin/env python3
+
+import keras2onnx
+import onnx
+import tensorflow as tf
+
+model = tf.keras.models.load_model("efficientnet-b0")
+onnx_model = keras2onnx.convert_keras(model, "efficientnet-b0")
+onnx.save_model(onnx_model, "efficientnet-b0.onnx")
+```
+
+実行例を以下に示します。
+
+```
+$ ./convert.py
+WARNING:tensorflow:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+tf executing eager_mode: True
+tf.keras model eager_mode: False
+2021-04-23 00:41:39.446674: W tensorflow/python/util/util.cc:329] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
+WARN: No corresponding ONNX op matches the tf.op node sequential/keras_layer/StatefulPartitionedCall/StatefulPartitionedCall/StatefulPartitionedCall/StatefulPartitionedCall/StatefulPartitionedCall/tf_op_layer_BroadcastTo_1/PartitionedCall/BroadcastTo_1 of type BroadcastTo
+      The generated ONNX model needs run with the custom op supports.
+The ONNX operator number change on the optimization: 4007 -> 492
+```
+
+## ONNXで推論する
+
+ソースコードは`tf2onnx`の場合と同様なので省略します。
+
+実行例を以下に示します。
+
+```
+root@a30864c4b2b2:/mnt/app# ./predict_onnx.py
+Traceback (most recent call last):
+  File "./predict_onnx.py", line 6, in <module>
+    session = onnxruntime.InferenceSession("efficientnet-b0.onnx")
+  File "/usr/local/lib/python3.6/dist-packages/onnxruntime/capi/onnxruntime_inference_collection.py", line 280, in __init__
+    self._create_inference_session(providers, provider_options)
+  File "/usr/local/lib/python3.6/dist-packages/onnxruntime/capi/onnxruntime_inference_collection.py", line 307, in _create_inference_session
+    sess = C.InferenceSession(session_options, self._model_path, True, self._read_config_from_model)
+onnxruntime.capi.onnxruntime_pybind11_state.Fail: [ONNXRuntimeError] : 1 : FAIL : Load model from efficientnet-b0.onnx failed:Fatal error: BroadcastTo is not a registered function/op
+```
+
+・・・エラーになっちゃいました。
+変換時のメッセージにもある通り、ONNXではサポートされていないオペレータ`BroadcastTo`が原因かと思います。
+カスタムオペレータを追加すれば対応できるかもしれませんが、`tf2onnx`での変換は成功しているので調査は中断しました。
+
+# 結論
+
+`tf2onnx`を使いましょう。
