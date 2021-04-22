@@ -41,7 +41,7 @@ KerasのモデルをONNXのモデルに変換する方法は、大きく以下�
 # tf2onnxで変換する
 
 [tf2onnx](https://github.com/onnx/tensorflow-onnx)は、TensorFlowのモデルをONNXのモデルに変換するツールです。
-Kerasで学習した後、SavedModel形式でモデルを保存すると、このツールで変換することができまず。
+Kerasで学習した後、SavedModel形式でモデルを保存すると、このツールで変換することができます。
 Keras H5形式には対応していないのでご注意ください。
 
 今回は学習は行わず、変換、推論だけを行っています。
@@ -69,7 +69,7 @@ ENV LANG C.UTF-8
 ENV TZ Asia/Tokyo
 ```
 
-```text:requirements.txt
+```:requirements.txt
 numpy==1.19.5
 onnxruntime==1.7.0
 tensorflow-hub==0.11.0
@@ -80,7 +80,7 @@ tf2onnx==1.8.4
 ## モデルを生成する
 
 今回はTensorFlow HubにあるEfficientNet B0をそのまま保存することでモデルファイルを生成します。
-全結合層の重み、バイアスはランダムな値で初期化されているため、その部分を含めた推論結果が変換前後で確認することで、変換の成否を判断します。
+推論結果を変換前後で確認することで、変換の成否を判断します。
 
 ```py:save_model.py
 #!/usr/bin/env python3
@@ -142,7 +142,7 @@ results = model.predict(images)
 print(results)
 ```
 
-実行例を以下に示します。
+実行例を以下に示します。全結合層が乱数で初期化されているため、モデルを保存する度に値は変わることにご注意ください。
 
 ```
 $ ./predict_keras.py
@@ -150,5 +150,73 @@ WARNING:tensorflow:No training configuration found in save file, so the model wa
 [[0.5295639]
  [0.5148043]]
 ```
+
+## モデルを変換する
+
+`tf2onnx`を使ってモデルを変換します。
+
+```sh:convert.sh
+#!/bin/bash
+python3 -m tf2onnx.convert --saved-model efficientnet-b0 --output efficientnet-b0.onnx
+```
+
+実行例を以下に示します。いくつか警告が出力されていますが今回は無視します。
+
+```
+$ ./convert.sh
+/usr/lib/python3.8/runpy.py:127: RuntimeWarning: 'tf2onnx.convert' found in sys.modules after import of package 'tf2onnx', but prior to execution of 'tf2onnx.convert'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+2021-04-23 00:14:01,125 - WARNING - '--tag' not specified for saved_model. Using --tag serve
+2021-04-23 00:14:06,873 - INFO - Signatures found in model: [serving_default].
+2021-04-23 00:14:06,873 - WARNING - '--signature_def' not specified, using first signature: serving_default
+2021-04-23 00:14:06,873 - INFO - Output names: ['dense']
+WARNING:tensorflow:From /usr/local/lib/python3.8/dist-packages/tf2onnx/tf_loader.py:557: extract_sub_graph (from tensorflow.python.framework.graph_util_impl) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use `tf.compat.v1.graph_util.extract_sub_graph`
+2021-04-23 00:14:09,553 - WARNING - From /usr/local/lib/python3.8/dist-packages/tf2onnx/tf_loader.py:557: extract_sub_graph (from tensorflow.python.framework.graph_util_impl) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use `tf.compat.v1.graph_util.extract_sub_graph`
+2021-04-23 00:14:10,275 - INFO - Using tensorflow=2.4.1, onnx=1.9.0, tf2onnx=1.8.4/cd55bf
+2021-04-23 00:14:10,275 - INFO - Using opset <onnx, 9>
+2021-04-23 00:14:11,053 - INFO - Computed 0 values for constant folding
+2021-04-23 00:14:13,763 - INFO - Optimizing ONNX model
+2021-04-23 00:14:17,027 - INFO - After optimization: BatchNormalization -42 (49->7), Const -240 (442->202), Identity -926 (926->0), Squeeze -16 (16->0), Transpose -275 (276->1), Unsqueeze -64 (64->0)
+2021-04-23 00:14:17,056 - INFO -
+2021-04-23 00:14:17,057 - INFO - Successfully converted TensorFlow model efficientnet-b0 to ONNX
+2021-04-23 00:14:17,057 - INFO - Model inputs: ['keras_layer_input:0']
+2021-04-23 00:14:17,057 - INFO - Model outputs: ['dense']
+2021-04-23 00:14:17,057 - INFO - ONNX model is saved at efficientnet-b0.onnx
+```
+
+## ONNXで推論する
+
+変換したONNXモデルを使って推論してみます。
+
+```py:predict_onnx.py
+#!/usr/bin/env python3
+
+import numpy as np
+import onnxruntime
+
+session = onnxruntime.InferenceSession("efficientnet-b0.onnx")
+
+images = np.array([
+  np.zeros((224, 224, 3), dtype=np.float32),
+  np.ones((224, 224, 3), dtype=np.float32),
+])
+
+results = session.run(["dense"], {"keras_layer_input:0": images})
+print(results)
+```
+
+実行例を以下に示します。
+
+```
+$ ./predict_onnx.py
+[array([[0.52956396],
+       [0.5148051 ]], dtype=float32)]
+```
+
+Kerasでの推論結果とは厳密には一致しませんが、小数点第5位まで一致しているので問題はなさそうです。
 
 # keras2onnxで変換する
