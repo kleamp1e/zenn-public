@@ -3,7 +3,7 @@ title: "EfficientNet B0のKerasモデルをONNXモデルに変換して推論す
 emoji: "🎓"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["machinelearning", "deeplearning", "computervision", "keras", "onnx"]
-published: false
+published: true
 ---
 
 # はじめに
