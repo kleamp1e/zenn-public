@@ -20,6 +20,7 @@ published: true
 * 番外編:
     * [EfficientNet B0〜B7で画像分類器を転移学習してみる](202104-efficientnet)
     * [EfficientNet B0のKerasモデルをONNXモデルに変換して推論する](202104-keras-onnx)
+    * [類似画像検索ツールを作ってみる (1) 序章](202105-similar-search-1)
 
 # 続 データ管理
 
