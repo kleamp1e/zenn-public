@@ -3,7 +3,7 @@ title: "類似画像検索ツールを作ってみる (1) 序章"
 emoji: "🔍"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["machinelearning", "deeplearning", "computervision", "python", "検索"]
-published: false
+published: true
 ---
 
 # 背景と目的
