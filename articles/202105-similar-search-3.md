@@ -119,3 +119,85 @@ $ tmux
 
 今回は徐々にプロセス数を増やし、最終的に8プロセスで並列実行しました。
 約10万枚の特徴量について、15分以内に処理を終えることができました。
+
+# 特徴量の結合
+
+上記のスクリプトで、画像1枚に対して1つの特徴量ファイルを得ることができました。
+ただ、このままでは処理しづらいので、一定単位（ここでは1万枚）でまとめることにします。
+
+特徴量ファイルを結合するスクリプトは以下の通りです。
+
+```py:concat.py
+#!/usr/bin/env python3
+
+import pathlib
+
+import numpy as np
+
+FEATURE_DIR = pathlib.Path("/mnt/feature/mobilenet_v3_large_100_224_feature_vector_v5")
+
+feature_paths = sorted(FEATURE_DIR.glob("*/*/*.npy"))
+print(len(feature_paths))
+
+maximum = 10000
+
+object_ids = []
+features = []
+for feature_path in feature_paths[0:maximum]:
+    print(feature_path)
+    object_id = feature_path.stem
+    feature = np.load(feature_path)
+    object_ids.append(object_id)
+    features.append(feature)
+
+object_ids = np.array(object_ids)
+features = np.array(features)
+
+for output_index in range(20):
+    object_ids_path = FEATURE_DIR / "{:04d}.object_ids.npy".format(output_index)
+    features_path = FEATURE_DIR / "{:04d}.features.npy".format(output_index)
+    if object_ids_path.exists():
+        continue
+
+    np.save(object_ids_path, object_ids)
+    np.save(features_path, features)
+
+    for feature_path in feature_paths[0:maximum]:
+        feature_path.unlink()
+
+    break
+```
+
+上記のスクリプトを11回実行し、`*.features.npy`、`*.object_ids.npy`のペアを11組作成しました。
+
+```
+# 11回実行する
+$ ./concat.py
+
+$ cd /mnt/feature/mobilenet_v3_large_100_224_feature_vector_v5/
+$ ls -lh *.npy
+-rw-r--r-- 1 1000 1000  49M May 23 10:42 0000.features.npy
+-rw-r--r-- 1 1000 1000 1.7M May 23 10:42 0000.object_ids.npy
+-rw-r--r-- 1 1000 1000  49M May 23 10:43 0001.features.npy
+-rw-r--r-- 1 1000 1000 1.7M May 23 10:43 0001.object_ids.npy
+-rw-r--r-- 1 1000 1000  49M May 23 10:43 0002.features.npy
+-rw-r--r-- 1 1000 1000 1.7M May 23 10:43 0002.object_ids.npy
+-rw-r--r-- 1 1000 1000  49M May 23 10:43 0003.features.npy
+-rw-r--r-- 1 1000 1000 1.7M May 23 10:43 0003.object_ids.npy
+-rw-r--r-- 1 1000 1000  49M May 23 10:43 0004.features.npy
+-rw-r--r-- 1 1000 1000 1.7M May 23 10:43 0004.object_ids.npy
+-rw-r--r-- 1 1000 1000  49M May 23 10:43 0005.features.npy
+-rw-r--r-- 1 1000 1000 1.7M May 23 10:43 0005.object_ids.npy
+-rw-r--r-- 1 1000 1000  49M May 23 10:43 0006.features.npy
+-rw-r--r-- 1 1000 1000 1.7M May 23 10:43 0006.object_ids.npy
+-rw-r--r-- 1 1000 1000  49M May 23 10:43 0007.features.npy
+-rw-r--r-- 1 1000 1000 1.7M May 23 10:43 0007.object_ids.npy
+-rw-r--r-- 1 1000 1000  49M May 23 10:43 0008.features.npy
+-rw-r--r-- 1 1000 1000 1.7M May 23 10:43 0008.object_ids.npy
+-rw-r--r-- 1 1000 1000  49M May 23 10:44 0009.features.npy
+-rw-r--r-- 1 1000 1000 1.7M May 23 10:44 0009.object_ids.npy
+-rw-r--r-- 1 1000 1000 1.9M May 23 10:44 0010.features.npy
+-rw-r--r-- 1 1000 1000  66K May 23 10:44 0010.object_ids.npy
+```
+
+結合後の特徴量は、1万枚あたり約50MBになりました。
