@@ -117,3 +117,71 @@ sys     0m1.169s
 
 それ以降も、同じ人物が写っている、同じ構図、同じ色調など、確かに「似ている画像」が出力されています。
 距離が`11`を越えた辺りから「似ている…かな？」となってきます。
+
+# マルチスレッド化
+
+何となく、それっぽい類似画像検索を行えるようになりました。ただ、目標としていた「1秒以内」が実現できておらず、1.6秒を要しています。
+1秒以内を目指すために、少し高速化をしてみましょう。
+
+上記のスクリプトでは、約50MBの特徴量ファイルの読み込みと検索を順次行っていますが、これをマルチスレッド化してみます。
+面倒なので、まずは特徴量ファイルの数だけスレッドを生成してみます。
+
+```py:search.py
+# （省略）
+
+import threading
+
+def search(object_ids_path, features_path, query_feature, limit, results):
+    object_ids = np.load(object_ids_path)
+    features = np.load(features_path)
+    assert len(object_ids) == len(features)
+
+    query_features = np.tile(query_feature, (len(features), 1))
+    distances = np.linalg.norm(query_features - features, axis=1)
+    distance_indexes = np.argsort(distances)[:limit]
+    results.extend(zip(object_ids[distance_indexes], distances[distance_indexes]))
+
+
+results = []
+search_threads = []
+limit = 10
+
+for blob_index in range(20):
+    object_ids_path = FEATURE_DIR / "{:04d}.object_ids.npy".format(blob_index)
+    features_path = FEATURE_DIR / "{:04d}.features.npy".format(blob_index)
+    if not object_ids_path.exists():
+        break
+
+    search_thread = threading.Thread(
+        target=search,
+        args=(object_ids_path, features_path, query_feature, limit, results),
+    )
+    search_thread.start()
+    search_threads.append(search_thread)
+
+for search_thread in search_threads:
+    search_thread.join()
+
+# （省略）
+```
+
+実行してみます。
+
+```
+$ time ./src/search.py /mnt/media/object/55/77/5577b06378df4cbf5fa04237ac767205a944a360.jpg
+...
+real    0m1.482s
+user    0m1.541s
+sys     0m1.743s
+```
+
+・・・0.1秒しか早くなりませんでした。そもそも検索処理は十分に高速なようです。
+
+各処理の時間を測定してみると、モデルのロードに0.4秒、推論に0.5秒掛かっているようです。
+高速化、最適化の第1ステップは「測定」。やっぱり手を抜いてはダメですね。
+
+# 今日はここまで
+
+今回は実際に類似画像を検索するところまで実施できました。ただ、目標とする「1秒以内」は実現できませんでした。
+
+次回は検索処理をサーバ化し、モデルファイル、特徴量ファイルの読み込みを起動時に1回だけ行うようにして、高速化を図ってみたいと思います。今日はここまで！
