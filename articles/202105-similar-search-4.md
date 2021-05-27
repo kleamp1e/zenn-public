@@ -92,7 +92,7 @@ for object_id, distance in sorted(results, key=lambda item: item[1])[0:limit]:
 コマンドライン引数にクエリ画像のファイルパスを指定して実行してみます。
 
 ```
-$  time ./src/search.py /mnt/media/object/55/77/5577b06378df4cbf5fa04237ac767205a944a360.jpg
+$ time ./src/search.py /mnt/media/object/55/77/5577b06378df4cbf5fa04237ac767205a944a360.jpg
 5577b06378df4cbf5fa04237ac767205a944a360.jpg 0.0
 877803e4c546ce3548b088cf734ee83a0c722a5a.jpg 0.39354559779167175
 d5d1e73cb23b79ec05743c97bedd2f770adcbcaf.jpg 8.174514770507812
