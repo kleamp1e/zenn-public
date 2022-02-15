@@ -6,6 +6,11 @@ topics: ["machinelearning", "deeplearning", "computervision", "python", "検索"
 published: true
 ---
 
+# 目次
+
+1. 画像からセクシー女優を検索するツールを実装してみた（本記事）
+2. [セクシー女優の顔特徴量をUMAPで次元削減、クラスタリングしてみた](202202-pornstar-umap)
+
 # はじめに
 
 画像に含まれているセクシー女優（と言うか、端的にはAV女優）を検索するOSS（オープンソースソフトウェア）を実装してみました。どうぞご査収ください。
@@ -71,14 +76,14 @@ Zennを眺めていたら、[Yuya Kato](https://zenn.dev/yuyakato)さんがシ�
 # 検索対象の画像を取得します。
 wget https://pics.dmm.co.jp/mono/actjpgs/hatano_yui.jpg
 
-# 顔認識します。
+# 顔検出します。
 curl -X POST \
   --header "Content-Type: multipart/form-data" \
   --form "file=@hatano_yui.jpg;type=image/jpeg" \
   http://localhost:8001/detect \
   > hatano_yui.json
 
-# 顔認識した結果から顔特徴量を抽出します。
+# 顔検出した結果から顔特徴量を抽出します。
 jq "{embedding: .response.faces[0].embedding}" \
   < hatano_yui.json \
   > hatano_yui_embedding.json
@@ -101,3 +106,5 @@ curl -X POST \
 現時点でもAPIがあるので、動画からフレームを切り出して自動的に検索・・・なども簡単に行えそうです。夢が広がりますね♪
 
 今のところ1,000人分のデータしか含まれていませんが、要望があれば拡充したいと思います。
+
+『[セクシー女優の顔特徴量をUMAPで次元削減、クラスタリングしてみた](202202-pornstar-umap)』に続く。
