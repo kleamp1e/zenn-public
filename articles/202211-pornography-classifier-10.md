@@ -1,7 +1,7 @@
 ---
 title: "けしからん画像分類器を作ってみる (10) 公開"
 emoji: "👙"
-type: "idea" # tech: 技術記事 / idea: アイデア
+type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["machinelearning", "deeplearning", "computervision", "python", "keras"]
 published: true
 ---
@@ -109,13 +109,29 @@ if __name__ == "__main__":
 
 ## 混同行列
 
-テストデータを推論した結果の混同行列（Confusion Matrix）は以下の通りです。
+テストデータの混同行列（Confusion Matrix）は以下の通りです。
 
 |         | 推論結果:0 | 推論結果:1 |
 |:---|---:|---:|
 | ラベル:0 | 882 | 120 |
 | ラベル:1 |  60 | 942 |
 
-（TODO: 混同行列）
-（TODO: 各種メトリクス）
-（TODO: ROC曲線）
+（TODO: 混同行列の画像）
+
+## メトリクス
+
+テストデータの各種メトリクスは以下の通りです。
+
+| メトリクス | 数値 |
+|:---|---:|
+| 正解率（Accuracy） | 0.9101 |
+| 適合率（Precision） | 0.8870 |
+| 再現率（Recall） | 0.9401 |
+| F1スコア | 0.9127 |
+| AUCスコア | 0.9745 |
+
+## ROC曲線
+
+テストデータのROC曲線は下図の通りです。
+
+（TODO: ROC曲線の図）
