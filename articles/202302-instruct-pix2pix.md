@@ -1,3 +1,10 @@
+---
+title: "ローカルのDocker環境でInstructPix2Pixを動かしてみた"
+emoji: "📝"
+type: "tech" # tech: 技術記事 / idea: アイデア
+topics: ["python", "machinelearning", "deeplearning", "computervision", "instructpix2pix"]
+published: true
+---
 
 # はじめに
 
@@ -8,7 +15,7 @@
 
 試した環境は以下の通りです。
 
-```text
+```
 $ grep PRETTY_NAME /etc/os-release
 PRETTY_NAME="Ubuntu 20.04.5 LTS"
 
@@ -58,28 +65,32 @@ $ docker-compose version
 Docker Compose version v2.1.1
 ```
 
-# Dockerfile
+# コードの取得 & ビルド
 
-`Dockerfile`の内容は以下の通りです。`requirements.txt`の内容は、リポジトリを直接参照してください。
+リポジトリを`git clone`し、Dockerイメージをビルドします。
 
-```Dockerfile
+```sh
+git clone https://github.com/kleamp1e/202302-instruct-pix2pix.git
+cd 202302-instruct-pix2pix
+docker-compose build
+```
+
+`Dockerfile`の内容は以下の通りです。
+
+```Dockerfile:Dockerfile
 FROM nvcr.io/nvidia/pytorch:22.11-py3
 WORKDIR /root/
 COPY requirements.txt ./
 RUN python3 -m pip install --requirement requirements.txt
 ```
 
-https://github.com/kleamp1e/202302-instruct-pix2pix
+`requirements.txt`の内容は以下の通りです。
 
-# コードの取得 & ビルド
-
-`git clone`し、Dockerイメージをビルドします。
-
-```sh
-git clone https://github.com/kleamp1e/202302-instruct-pix2pix.git
-cd 202302-instruct-pix2pix
-
-docker-compose build
+```txt:requirements.txt
+accelerate==0.16.0
+diffusers==0.13.1
+safetensors==0.2.8
+transformers==4.26.1
 ```
 
 # 実行
@@ -90,10 +101,25 @@ Dockerコンテナを起動し、`example.py`を実行します。
 ```sh
 docker-compose run --rm shell
 
-# 以下、コンテナ内
+# 以下、Dockerコンテナ内
 python3 example.py
 ```
 
-なお、`example.py`の内容は以下のページに記載されているものをフォーマットしたものです。
+なお、`example.py`の内容は以下のページに記載されているものを微調整したものです。
 
 https://huggingface.co/timbrooks/instruct-pix2pix
+
+`cyborg.jpg`が生成されたら成功です。
+
+# 実行例
+
+実行例は以下の通りです。
+
+入力画像:
+
+出力画像:
+
+# おわりに
+
+簡単にではありますがInstructPix2Pixを動かしてみました。
+画像生成系は日々新しい技術が発表されてめまぐるしいですね。今後の発展も楽しみです。
