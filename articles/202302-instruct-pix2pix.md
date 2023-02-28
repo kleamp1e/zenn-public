@@ -86,7 +86,7 @@ RUN python3 -m pip install --requirement requirements.txt
 
 `requirements.txt`の内容は以下の通りです。
 
-```txt:requirements.txt
+```text:requirements.txt
 accelerate==0.16.0
 diffusers==0.13.1
 safetensors==0.2.8
@@ -113,11 +113,15 @@ https://huggingface.co/timbrooks/instruct-pix2pix
 
 # 実行例
 
-実行例は以下の通りです。
+プロンプト「turn him into cyborg」の実行例は以下の通りです。
 
-入力画像:
+**入力画像:**
 
-出力画像:
+![](https://storage.googleapis.com/zenn-user-upload/bb9e1aa54389-20230228.jpg)
+
+**出力画像:**
+
+![](https://storage.googleapis.com/zenn-user-upload/cf3bee311f0a-20230228.jpg)
 
 # おわりに
 
